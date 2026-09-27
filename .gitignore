@@ -27,3 +27,6 @@ Thumbs.db
 *.swp
 
 compile_out.txt
+
+# === Project health check reports (local only) ===
+*体检报告*.md
