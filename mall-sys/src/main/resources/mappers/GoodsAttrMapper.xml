@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gec.dao.GoodsAttrMapper">
+
+    <!-- 1. 分页+搜索查询规格参数/销售属性列表(带所属分组名)。
+         Page<GoodsAttrBO> getGoodsAttrList(
+             Page page, @Param("param") GoodsAttrSearch attrSearch ); -->
+    <select id="getGoodsAttrList" resultType="com.gec.domain.bo.GoodsAttrBO">
+        SELECT att.id, att.attr_name, att.category_id, att.attr_type,
+               att.value_type, att.attr_value, att.enable, att.search_enable,
+               g.id AS attr_group_id, g.group_name
+        FROM tbl_goods_attr att
+        LEFT JOIN tbl_group_attr_relation r ON r.attr_id = att.id
+        LEFT JOIN tbl_goods_attr_group g ON g.id = r.attr_group_id
+        <where>
+            att.category_id = #{param.categoryId}
+            AND att.attr_type = #{param.attrType}
+            <if test="param.attrName != null and param.attrName != ''">
+                AND att.attr_name LIKE CONCAT('%', #{param.attrName}, '%')
+            </if>
+            <if test="param.attrGroupId != null">
+                AND r.attr_group_id = #{param.attrGroupId}
+            </if>
+        </where>
+        ORDER BY att.id
+    </select>
+
+    <!-- 2. 按属性ID集合查询属性值(编辑回显用)。
+         List<GoodsAttrValue> getAttrValByAttrId(
+             @Param("ids") List<Integer> ids ); -->
+    <select id="getAttrValByAttrId"
+            resultType="com.gec.domain.entity.GoodsAttrValue">
+        SELECT * FROM tbl_goods_attr_value
+        WHERE attr_id IN
+        <foreach collection="ids" item="id"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <!-- 3. 新增属性值。
+         int addGoodsAttrVal( GoodsAttrVO attrVO ); -->
+    <insert id="addGoodsAttrVal">
+        INSERT INTO tbl_goods_attr_value
+            (attr_id, value_type, attr_value)
+        VALUES
+            (#{attrId}, #{valueType}, #{attrValue})
+    </insert>
+
+    <!-- 4. 删除属性值。
+         int removeGoodsAttrVal(
+             @Param("attrId") Integer attrId ); -->
+    <delete id="removeGoodsAttrVal">
+        DELETE FROM tbl_goods_attr_value
+        WHERE attr_id = #{attrId}
+    </delete>
+
+    <!-- 5. 建立属性与分组的关联。
+         int addGroupAttrRelation(
+             @Param("attrGroupId") Integer attrGroupId,
+             @Param("attrId") Integer attrId ); -->
+    <insert id="addGroupAttrRelation">
+        INSERT INTO tbl_group_attr_relation
+            (attr_group_id, attr_id)
+        VALUES
+            (#{attrGroupId}, #{attrId})
+    </insert>
+
+    <!-- 6. 删除属性与分组的关联。
+         int removeGroupAttrRelation(
+             @Param("attrId") Integer attrId ); -->
+    <delete id="removeGroupAttrRelation">
+        DELETE FROM tbl_group_attr_relation
+        WHERE attr_id = #{attrId}
+    </delete>
+
+</mapper>

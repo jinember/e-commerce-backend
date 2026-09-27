@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gec.dao.SkuInfoMapper">
+
+    <!-- 1. SKU 分页列表。
+         Page<SkuVO> selectSkuPage(
+             @Param("page") Page<SkuVO> page,
+             @Param("param") SkuSearch param ); -->
+    <select id = "selectSkuPage" resultType = "com.gec.domain.vo.SkuVO">
+            SELECT
+                s.sku_id,
+                s.spu_id,
+                s.sku_name,
+                s.sku_desc,
+                s.category_id,
+                s.brand_id,
+                s.sku_title,
+                s.sku_subtitle,
+                s.price,
+                s.sale_count,
+                c.category_name,
+                b.brand_name,
+                (SELECT a.default_image
+                 FROM tbl_sku_album a
+                 WHERE a.sku_id = s.sku_id
+                 LIMIT 1) AS default_image
+            FROM tbl_sku_info s
+            LEFT JOIN tbl_goods_category c
+                ON s.category_id = c.id
+            LEFT JOIN tbl_brand b
+                ON s.brand_id = b.id
+            <include refid = "list_where"/>
+            ORDER BY s.sku_id DESC
+    </select>
+
+    <!-- 2. list_where -->
+    <sql id = "list_where">
+            <where>
+                    <if test = "param.skuId != null">
+                            AND s.sku_id = #{param.skuId}
+                    </if>
+                    <if test = "param.spuId != null">
+                            AND s.spu_id = #{param.spuId}
+                    </if>
+                    <if test = "param.skuName != null">
+                            AND s.sku_name
+                            LIKE CONCAT('%',#{param.skuName},'%')
+                    </if>
+                    <if test = "param.categoryId != null">
+                            AND s.category_id = #{param.categoryId}
+                    </if>
+                    <if test = "param.brandId != null">
+                            AND s.brand_id = #{param.brandId}
+                    </if>
+                    <if test = "param.priceMin != null">
+                            AND s.price &gt;= #{param.priceMin}
+                    </if>
+                    <if test = "param.priceMax != null">
+                            AND s.price &lt;= #{param.priceMax}
+                    </if>
+            </where>
+    </sql>
+</mapper>

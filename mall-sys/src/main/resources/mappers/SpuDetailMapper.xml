@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gec.dao.SpuDetailMapper">
+
+    <!-- 1. 商品(SPU)分页列表。
+         Page<SpuVO> selectSpuPage(
+             @Param("page") Page<SpuVO> page,
+             @Param("param") SpuSearch param ); -->
+    <select id = "selectSpuPage" resultType = "com.gec.domain.vo.SpuVO">
+            SELECT
+                d.id,
+                d.goods_name,
+                d.goods_details,
+                d.category_id,
+                d.brand_id,
+                d.weight,
+                d.create_date,
+                d.update_date,
+                d.main_image,
+                d.status,
+                c.category_name,
+                b.brand_name
+            FROM tbl_spu_detail d
+            LEFT JOIN tbl_goods_category c
+                ON d.category_id = c.id
+            LEFT JOIN tbl_brand b
+                ON d.brand_id = b.id
+            <include refid = "list_where"/>
+            ORDER BY d.id DESC
+    </select>
+
+    <!-- 2. list_where -->
+    <sql id = "list_where">
+            <where>
+                    <if test = "param.id != null">
+                            AND d.id = #{param.id}
+                    </if>
+                    <if test = "param.goodsName != null">
+                            AND d.goods_name
+                            LIKE CONCAT('%',#{param.goodsName},'%')
+                    </if>
+                    <if test = "param.categoryId != null">
+                            AND d.category_id = #{param.categoryId}
+                    </if>
+                    <if test = "param.brandId != null">
+                            AND d.brand_id = #{param.brandId}
+                    </if>
+                    <if test = "param.status != null">
+                            AND d.status = #{param.status}
+                    </if>
+            </where>
+    </sql>
+</mapper>

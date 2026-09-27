@@ -1,0 +1,48 @@
+server:
+  port: 8090
+  servlet:
+    context-path: /mall-sys
+
+db:
+  username: root
+  password: "123456"
+  host: 127.0.0.1
+  port: 3306
+  name: mall-sys-etl
+  # 8.x 驱动：必须用 cj 包下的 Driver，并显式给 serverTimezone，否则会报时区错误
+  driverName: com.mysql.cj.jdbc.Driver
+  params: "useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai"
+
+spring:
+  datasource:
+    username: ${db.username}
+    password: ${db.password}
+    driver-class-name: ${db.driverName}
+    url: jdbc:mysql://${db.host}:${db.port}/${db.name}?${db.params}
+
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 4
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-aliases-super-type: com.gec.domain.entity.BaseEntity
+  mapper-locations:
+    - classpath*:/mappers/*.xml
+
+web:
+  # 上传根目录。原来硬编码成 D:\e-commerce\space，换机器就失效。
+  # 现在支持用环境变量 MALL_UPLOAD_DIR 覆盖，默认值保持原来的路径以兼容已有图片。
+  # Windows: set MALL_UPLOAD_DIR=D:\your\path    Linux/mac: export MALL_UPLOAD_DIR=/your/path
+  uploadDir: ${MALL_UPLOAD_DIR:D:/e-commerce/space}
+
+# 缓存开关：Redis 连不上时关掉即可，代码里也做了降级，不会因缓存失败影响主流程
+cache:
+  enabled: true
+  ttl-seconds: 300
